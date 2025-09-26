@@ -196,6 +196,7 @@ class StaticDataService {
           name: 'Weekly PES Championship',
           description: 'Compete in the ultimate football tournament',
           gameType: AppConstants.pesMobile,
+          format: TournamentFormat.singleElimination,
           maxParticipants: 64,
           currentParticipants: 45,
           entryFee: 50.0,
@@ -206,6 +207,7 @@ class StaticDataService {
           registrationDeadline: DateTime.now().add(const Duration(days: 1)),
           imageUrl: null,
           rules: ['Fair play required', 'No cheating', 'Respect opponents'],
+          participants: List.generate(45, (i) => 'Player${i + 1}'),
           createdAt: DateTime.now().subtract(const Duration(days: 5)),
         ),
         Tournament(
@@ -213,6 +215,7 @@ class StaticDataService {
           name: 'PUBG Mobile Battle Royale',
           description: 'Squad-based battle royale tournament',
           gameType: AppConstants.pubgMobile,
+          format: TournamentFormat.doubleElimination,
           maxParticipants: 100,
           currentParticipants: 78,
           entryFee: 25.0,
@@ -223,6 +226,7 @@ class StaticDataService {
           registrationDeadline: DateTime.now().subtract(const Duration(hours: 3)),
           imageUrl: null,
           rules: ['Squad of 4 players', 'No third-party tools', 'Follow game rules'],
+          participants: List.generate(78, (i) => 'TeamLeader${i + 1}'),
           createdAt: DateTime.now().subtract(const Duration(days: 7)),
         ),
         Tournament(
@@ -230,6 +234,7 @@ class StaticDataService {
           name: 'Free Fire Masters',
           description: 'Solo battle royale championship',
           gameType: AppConstants.freeFire,
+          format: TournamentFormat.roundRobin,
           maxParticipants: 50,
           currentParticipants: 32,
           entryFee: 30.0,
@@ -240,6 +245,7 @@ class StaticDataService {
           registrationDeadline: DateTime.now().add(const Duration(days: 4)),
           imageUrl: null,
           rules: ['Solo matches only', 'No teaming', 'Fair play'],
+          participants: List.generate(32, (i) => 'SoloPlayer${i + 1}'),
           createdAt: DateTime.now().subtract(const Duration(days: 3)),
         ),
         Tournament(
@@ -247,6 +253,7 @@ class StaticDataService {
           name: 'COD Mobile Championship',
           description: 'Multiplayer tournament with multiple game modes',
           gameType: AppConstants.codMobile,
+          format: TournamentFormat.swiss,
           maxParticipants: 32,
           currentParticipants: 32,
           entryFee: 75.0,
@@ -257,6 +264,7 @@ class StaticDataService {
           registrationDeadline: DateTime.now().subtract(const Duration(days: 4)),
           imageUrl: null,
           rules: ['Team Deathmatch', 'Best of 3 rounds', 'Professional conduct'],
+          participants: List.generate(32, (i) => 'CodMaster${i + 1}'),
           createdAt: DateTime.now().subtract(const Duration(days: 10)),
         ),
       ];

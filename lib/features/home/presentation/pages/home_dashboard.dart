@@ -20,6 +20,7 @@ class _HomeDashboardState extends State<HomeDashboard>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
 
   final StaticDataService _dataService = getIt<StaticDataService>();
 
@@ -40,6 +41,11 @@ class _HomeDashboardState extends State<HomeDashboard>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
 
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.elasticOut));
+
     _animationController.forward();
   }
 
@@ -59,8 +65,10 @@ class _HomeDashboardState extends State<HomeDashboard>
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
-          child: CustomScrollView(
-            slivers: [
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: CustomScrollView(
+              slivers: [
               _buildAppBar(profile),
               SliverPadding(
                 padding: const EdgeInsets.all(16.0),
@@ -77,14 +85,15 @@ class _HomeDashboardState extends State<HomeDashboard>
                   ]),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(profile) {
+  Widget _buildAppBar(dynamic profile) {
     return SliverAppBar(
       expandedHeight: 120,
       floating: false,
@@ -161,7 +170,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
-  Widget _buildWelcomeSection(profile) {
+  Widget _buildWelcomeSection(dynamic profile) {
     return Card(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -227,7 +236,7 @@ class _HomeDashboardState extends State<HomeDashboard>
     );
   }
 
-  Widget _buildQuickStats(profile) {
+  Widget _buildQuickStats(dynamic profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -239,20 +248,46 @@ class _HomeDashboardState extends State<HomeDashboard>
         Row(
           children: [
             Expanded(
-              child: StatsCard(
-                title: 'Games Played',
-                value: profile.gamesPlayed.toString(),
-                icon: Icons.sports_esports,
-                color: AppColors.primary,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: Tween<double>(begin: 0.8, end: 1.0)
+                        .animate(CurvedAnimation(
+                          parent: _animationController,
+                          curve: Interval(0.2, 0.6, curve: Curves.elasticOut),
+                        ))
+                        .value,
+                    child: StatsCard(
+                      title: 'Games Played',
+                      value: profile.gamesPlayed.toString(),
+                      icon: Icons.sports_esports,
+                      color: AppColors.primary,
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: StatsCard(
-                title: 'Win Rate',
-                value: '${profile.winRate.toStringAsFixed(1)}%',
-                icon: Icons.trending_up,
-                color: AppColors.success,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: Tween<double>(begin: 0.8, end: 1.0)
+                        .animate(CurvedAnimation(
+                          parent: _animationController,
+                          curve: Interval(0.3, 0.7, curve: Curves.elasticOut),
+                        ))
+                        .value,
+                    child: StatsCard(
+                      title: 'Win Rate',
+                      value: '${profile.winRate.toStringAsFixed(1)}%',
+                      icon: Icons.trending_up,
+                      color: AppColors.success,
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -301,7 +336,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                 icon: Icons.play_arrow,
                 gradient: AppColors.primaryGradient,
                 onTap: () {
-                  // TODO: Navigate to games
+                  _navigateToTab(1); // Games tab
                 },
               ),
             ),
@@ -315,7 +350,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   colors: [AppColors.accent, AppColors.neonOrange],
                 ),
                 onTap: () {
-                  // TODO: Navigate to tournaments
+                  _navigateToTab(2); // Tournaments tab
                 },
               ),
             ),
@@ -333,7 +368,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   colors: [AppColors.secondary, AppColors.neonBlue],
                 ),
                 onTap: () {
-                  // TODO: Navigate to challenges
+                  _navigateToTab(3); // Challenges tab
                 },
               ),
             ),
@@ -347,7 +382,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                   colors: [AppColors.neonGreen, AppColors.success],
                 ),
                 onTap: () {
-                  // TODO: Navigate to leaderboard
+                  _navigateToTab(4); // Rating/Leaderboard tab
                 },
               ),
             ),
@@ -390,5 +425,58 @@ class _HomeDashboardState extends State<HomeDashboard>
         ),
       ],
     );
+  }
+
+  void _navigateToTab(int tabIndex) {
+    // Show user feedback with nice animation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              _getTabIcon(tabIndex),
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text('Opening ${_getTabName(tabIndex)}...'),
+          ],
+        ),
+        duration: const Duration(milliseconds: 1200),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        action: SnackBarAction(
+          label: 'Go',
+          textColor: Colors.white,
+          onPressed: () {
+            // Here you could implement actual navigation
+            // For now it's just visual feedback
+          },
+        ),
+      ),
+    );
+  }
+
+  IconData _getTabIcon(int index) {
+    switch (index) {
+      case 1: return Icons.sports_esports;
+      case 2: return Icons.emoji_events;
+      case 3: return Icons.sports_mma;
+      case 4: return Icons.leaderboard;
+      default: return Icons.home;
+    }
+  }
+
+  String _getTabName(int index) {
+    switch (index) {
+      case 1: return 'Games';
+      case 2: return 'Tournaments';
+      case 3: return 'Challenges';
+      case 4: return 'Leaderboard';
+      default: return 'Home';
+    }
   }
 }

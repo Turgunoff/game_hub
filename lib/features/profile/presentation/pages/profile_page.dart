@@ -19,6 +19,8 @@ class _ProfilePageState extends State<ProfilePage>
 
   late AnimationController _animationController;
   final StaticDataService _dataService = getIt<StaticDataService>();
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -27,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _animationController.forward();
+    _loadProfileData();
   }
 
   @override
@@ -36,8 +38,89 @@ class _ProfilePageState extends State<ProfilePage>
     super.dispose();
   }
 
+  Future<void> _loadProfileData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      // Simulate API call delay
+      await Future.delayed(const Duration(milliseconds: 1200));
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _animationController.forward();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load profile data';
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+          centerTitle: true,
+          backgroundColor: AppColors.surface,
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+              SizedBox(height: 16),
+              Text('Loading profile...'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+          centerTitle: true,
+          backgroundColor: AppColors.surface,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage!,
+                style: AppTextStyles.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _loadProfileData,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final profile = _dataService.currentUserProfile;
     final ratings = _dataService.userRatings;
 
@@ -81,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  Widget _buildProfileHeader(profile) {
+  Widget _buildProfileHeader(dynamic profile) {
     return Card(
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -230,7 +313,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  Widget _buildStatsSection(profile) {
+  Widget _buildStatsSection(dynamic profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -447,7 +530,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  Widget _buildEditProfileBottomSheet(profile) {
+  Widget _buildEditProfileBottomSheet(dynamic profile) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: const BoxDecoration(
@@ -525,7 +608,7 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             const SizedBox(height: 16),
             TextFormField(
-              initialValue: profile.bio,
+              initialValue: profile.bio ?? '',
               maxLines: 3,
               decoration: const InputDecoration(
                 labelText: 'Bio',

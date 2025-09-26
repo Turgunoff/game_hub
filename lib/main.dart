@@ -21,7 +21,7 @@ class GameHubApp extends StatelessWidget {
       title: 'Game Hub',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const LoginPage(),
+      home: const MainNavigationPage(), // Skip login for development
       routes: {
         '/login': (context) => const LoginPage(),
         '/home': (context) => const MainNavigationPage(),

@@ -394,7 +394,7 @@ class _CreateChallengePageState extends State<CreateChallengePage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              items: (value as List<String>).map((option) {
+              items: value.map<DropdownMenuItem<String>>((option) {
                 return DropdownMenuItem(
                   value: option,
                   child: Text(option),

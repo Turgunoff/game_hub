@@ -65,14 +65,19 @@ class _GamesPageState extends State<GamesPage>
           _buildSearchBar(),
           _buildCategoryFilter(),
           Expanded(
-            child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _animationController,
-                  child: _buildGamesList(filteredGames),
-                );
-              },
+            child: RefreshIndicator(
+              onRefresh: _refreshGames,
+              color: AppColors.primary,
+              backgroundColor: AppColors.surface,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _animationController,
+                    child: _buildGamesList(filteredGames),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -250,6 +255,31 @@ class _GamesPageState extends State<GamesPage>
     return games;
   }
 
+  Future<void> _refreshGames() async {
+    // Simulate API refresh delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.refresh, color: Colors.white),
+            const SizedBox(width: 8),
+            Text('Games refreshed!'),
+          ],
+        ),
+        backgroundColor: AppColors.success,
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
   void _showGameDetails(Game game) {
     showModalBottomSheet(
       context: context,
@@ -392,7 +422,7 @@ class _GamesPageState extends State<GamesPage>
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        // TODO: Navigate to game modes or challenges
+                        _showGameModes(game);
                       },
                       icon: const Icon(Icons.play_arrow),
                       label: const Text('Play Now'),
@@ -406,6 +436,143 @@ class _GamesPageState extends State<GamesPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showGameModes(Game game) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: AppColors.onSurfaceSecondary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Choose Game Mode',
+                    style: AppTextStyles.headline4,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildGameModeOption(
+                    'Quick Match',
+                    'Find a random opponent',
+                    Icons.flash_on,
+                    AppColors.primary,
+                    () => _startQuickMatch(game),
+                  ),
+                  _buildGameModeOption(
+                    'Tournament',
+                    'Join a tournament',
+                    Icons.emoji_events,
+                    AppColors.accent,
+                    () => _joinTournament(game),
+                  ),
+                  _buildGameModeOption(
+                    'Challenge',
+                    'Create or accept a challenge',
+                    Icons.sports_mma,
+                    AppColors.secondary,
+                    () => _createChallenge(game),
+                  ),
+                  _buildGameModeOption(
+                    'Practice',
+                    'Play against AI',
+                    Icons.psychology,
+                    AppColors.success,
+                    () => _startPractice(game),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGameModeOption(
+    String title,
+    String description,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(title, style: AppTextStyles.labelLarge),
+        subtitle: Text(description, style: AppTextStyles.bodySmall),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {
+          Navigator.pop(context);
+          onTap();
+        },
+      ),
+    );
+  }
+
+  void _startQuickMatch(Game game) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Starting quick match for ${game.name}...'),
+        backgroundColor: AppColors.primary,
+      ),
+    );
+  }
+
+  void _joinTournament(Game game) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Looking for ${game.name} tournaments...'),
+        backgroundColor: AppColors.accent,
+      ),
+    );
+  }
+
+  void _createChallenge(Game game) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Creating ${game.name} challenge...'),
+        backgroundColor: AppColors.secondary,
+      ),
+    );
+  }
+
+  void _startPractice(Game game) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Starting practice mode for ${game.name}...'),
+        backgroundColor: AppColors.success,
       ),
     );
   }

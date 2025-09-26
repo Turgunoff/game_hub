@@ -2,11 +2,14 @@ import 'package:equatable/equatable.dart';
 
 enum TournamentStatus { upcoming, ongoing, completed, cancelled }
 
+enum TournamentFormat { singleElimination, doubleElimination, roundRobin, swiss }
+
 class Tournament extends Equatable {
   final String id;
   final String name;
   final String description;
   final String gameType;
+  final TournamentFormat format;
   final int maxParticipants;
   final int currentParticipants;
   final double entryFee;
@@ -17,6 +20,7 @@ class Tournament extends Equatable {
   final DateTime registrationDeadline;
   final String? imageUrl;
   final List<String> rules;
+  final List<String> participants;
   final DateTime createdAt;
 
   const Tournament({
@@ -24,6 +28,7 @@ class Tournament extends Equatable {
     required this.name,
     required this.description,
     required this.gameType,
+    required this.format,
     required this.maxParticipants,
     required this.currentParticipants,
     required this.entryFee,
@@ -34,6 +39,7 @@ class Tournament extends Equatable {
     required this.registrationDeadline,
     this.imageUrl,
     required this.rules,
+    required this.participants,
     required this.createdAt,
   });
 
@@ -43,6 +49,7 @@ class Tournament extends Equatable {
         name,
         description,
         gameType,
+        format,
         maxParticipants,
         currentParticipants,
         entryFee,
@@ -53,6 +60,7 @@ class Tournament extends Equatable {
         registrationDeadline,
         imageUrl,
         rules,
+        participants,
         createdAt,
       ];
 }

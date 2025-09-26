@@ -31,11 +31,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   ];
 
   final List<NavItem> _navItems = const [
-    NavItem(
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home,
-      label: 'Home',
-    ),
+    NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home'),
     NavItem(
       icon: Icons.sports_esports_outlined,
       activeIcon: Icons.sports_esports,
@@ -83,14 +79,20 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        children: _pages,
+      body: SafeArea(
+        child: PageView(
+          controller: _pageController,
+          physics:
+              const NeverScrollableScrollPhysics(), // Disable swipe navigation
+          onPageChanged: (index) {
+            if (mounted) {
+              setState(() {
+                _currentIndex = index;
+              });
+            }
+          },
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -98,7 +100,6 @@ class _MainNavigationPageState extends State<MainNavigationPage>
 
   Widget _buildBottomNavigationBar() {
     return Container(
-      height: 80,
       decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
@@ -110,71 +111,101 @@ class _MainNavigationPageState extends State<MainNavigationPage>
         ],
       ),
       child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: _navItems.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            final isActive = _currentIndex == index;
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: _navItems.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isActive = _currentIndex == index;
 
-            return GestureDetector(
-              onTap: () => _onNavItemTapped(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: isActive ? AppColors.primaryGradient : null,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: isActive ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+              return Flexible(
+                child: GestureDetector(
+                  onTap: () => _onNavItemTapped(index),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                  ] : null,
+                    decoration: BoxDecoration(
+                      gradient: isActive ? AppColors.primaryGradient : null,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            isActive ? item.activeIcon : item.icon,
+                            key: ValueKey(isActive),
+                            color: isActive
+                                ? Colors.white
+                                : AppColors.onSurfaceSecondary,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: isActive
+                                ? Colors.white
+                                : AppColors.onSurfaceSecondary,
+                            fontWeight: isActive
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            fontSize: 8,
+                          ),
+                          child: Text(
+                            item.label,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        isActive ? item.activeIcon : item.icon,
-                        key: ValueKey(isActive),
-                        color: isActive ? Colors.white : AppColors.onSurfaceSecondary,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: isActive ? Colors.white : AppColors.onSurfaceSecondary,
-                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                        fontSize: 10,
-                      ),
-                      child: Text(item.label),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
   }
 
   void _onNavItemTapped(int index) {
-    if (_currentIndex != index) {
+    if (_currentIndex != index && mounted) {
       _animationController.forward().then((_) {
-        _pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-        _animationController.reverse();
+        if (mounted) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+          _animationController.reverse();
+        }
       });
+    }
+  }
+
+  void switchToTab(int index) {
+    if (index >= 0 && index < _pages.length) {
+      _onNavItemTapped(index);
     }
   }
 }

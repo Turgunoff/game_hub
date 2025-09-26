@@ -9,6 +9,7 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:game_hub/core/data/services/static_data_service.dart' as _i680;
 import 'package:game_hub/core/di_module.dart' as _i865;
 import 'package:game_hub/core/network/dio_client.dart' as _i689;
 import 'package:game_hub/features/authentication/data/datasources/auth_local_data_source.dart'
@@ -42,6 +43,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => diModule.sharedPreferences,
       preResolve: true,
     );
+    gh.singleton<_i680.StaticDataService>(() => _i680.StaticDataService());
     gh.singleton<_i942.AuthRemoteDataSource>(
       () => _i942.AuthRemoteDataSourceImpl(gh<_i689.DioClient>()),
     );
